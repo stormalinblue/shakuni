@@ -1,6 +1,8 @@
 module Lib
-    ( someFunc
+    ( libMain
     ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import Chess.Chess (chessMain)
+
+libMain :: IO ()
+libMain = chessMain

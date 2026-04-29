@@ -25,6 +25,12 @@ source-repository head
 
 library
   exposed-modules:
+      Chess.Chess
+      Chess.ChessDisplay
+      Chess.GameState
+      Chess.GameState.Display
+      Chess.Piece
+      Chess.Position
       Lib
   other-modules:
       Paths_shakuni
@@ -34,7 +40,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
   default-language: Haskell2010
 
 executable shakuni-exe
@@ -47,7 +54,8 @@ executable shakuni-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , shakuni
   default-language: Haskell2010
 
@@ -62,6 +70,7 @@ test-suite shakuni-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      array
+    , base >=4.7 && <5
     , shakuni
   default-language: Haskell2010
