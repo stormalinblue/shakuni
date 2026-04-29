@@ -32,6 +32,7 @@ library
       Chess.Piece
       Chess.Position
       Lib
+      TicTacToe.Main
   other-modules:
       Paths_shakuni
   autogen-modules:

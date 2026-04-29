@@ -1,8 +1,10 @@
 module Lib
-    ( libMain
-    ) where
+  ( libMain,
+  )
+where
 
 import Chess.Chess (chessMain)
+import qualified TicTacToe.Main
 
 libMain :: IO ()
-libMain = chessMain
+libMain = TicTacToe.Main.main
