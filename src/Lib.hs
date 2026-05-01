@@ -3,8 +3,8 @@ module Lib
   )
 where
 
-import Chess.Chess (chessMain)
+import qualified Chess.Main
 import qualified TicTacToe.Main
 
 libMain :: IO ()
-libMain = TicTacToe.Main.main
+libMain = Chess.Main.main

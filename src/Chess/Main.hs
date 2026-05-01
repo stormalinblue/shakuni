@@ -1,4 +1,4 @@
-module Chess.Chess (chessMain) where
+module Chess.Main (main) where
 
 import Chess.ChessDisplay
 import Chess.GameState.Display as GSD
@@ -43,5 +43,5 @@ initialPiece (File f) (Rank 8) = case f of
   _ -> Nothing
 initialPiece _ _ = Nothing
 
-chessMain :: IO ()
-chessMain = printBoard exampleBoard
+main :: IO ()
+main = printBoard exampleBoard

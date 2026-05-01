@@ -25,10 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      Chess.Chess
       Chess.ChessDisplay
       Chess.GameState
       Chess.GameState.Display
+      Chess.Main
       Chess.Piece
       Chess.Position
       Lib

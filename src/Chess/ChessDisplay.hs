@@ -24,7 +24,7 @@ unicodePiece (GSD.DisplayPiece {GSD.color = color, GSD.pieceType = pieceType}) =
     up (Black, Rook) = "♜"
     up (Black, Bishop) = "♝"
     up (Black, Knight) = "♞"
-    up (Black, Pawn) = "♟"
+    up (Black, Pawn) = "\x265F\xFE0E"
 
 -- ASCII fallback (optional)
 asciiPiece :: GSD.DisplayPiece -> String
