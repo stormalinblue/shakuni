@@ -4,7 +4,8 @@ module Lib
 where
 
 import qualified Chess.Main
+import qualified Chess.XBoard.Main
 import qualified TicTacToe.Main
 
 libMain :: IO ()
-libMain = Chess.Main.main
+libMain = Chess.XBoard.Main.main
