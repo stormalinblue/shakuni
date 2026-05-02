@@ -1,7 +1,7 @@
 -- Written by Microsoft Copilot
 {-# LANGUAGE OverloadedStrings #-}
 
-module Chess.ChessDisplay where
+module Chess.ChessDisplay (printBoard) where
 
 import qualified Chess.GameState.Display as GSD
 import Chess.Piece (Color (..), PieceType (..))
