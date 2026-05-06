@@ -1,12 +1,22 @@
-module Chess.XBoard.EngineToX () where
+module Chess.XBoard.EngineToX
+  ( EngineToX (..),
+    XBoardControl (..),
+    XBoardFeature (..),
+    XBoardOptionDefn (..),
+    ControlRange (..),
+    commandText,
+  )
+where
 
-import Chess.XBoard.XToEngine (XBoardMove, XBoardResult)
+import Chess.XBoard.CommonTypes (XBoardMove (..), XBoardResult)
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
 
-data XBoardFeatureValue = StringFeat T.Text | IntFeat Int | BoolFeat Bool
-
-data ControlRange = ControlRange {value :: Int, minValue :: Int, maxValue :: Int}
+data ControlRange = ControlRange
+  { value :: Int,
+    minValue :: Int,
+    maxValue :: Int
+  }
 
 data XBoardControl
   = Button
@@ -21,7 +31,10 @@ data XBoardControl
   | Path T.Text
 
 data XBoardOptionDefn
-  = XBoardOption {name :: T.Text, control :: XBoardControl}
+  = XBoardOption
+  { name :: T.Text,
+    control :: XBoardControl
+  }
 
 data XBoardFeature
   = PingF Bool
@@ -50,7 +63,7 @@ data XBoardFeature
   | Exclude Bool
   | SetScore Bool
   | Highlight Bool
-  | Done Int
+  | Done Bool
 
 data EngineToX
   = Feature [XBoardFeature]
@@ -69,3 +82,32 @@ data EngineToX
   | TellICS T.Text
   | TellICSNoAlias T.Text
   | Comment T.Text
+  | Pong Int
+
+commandText :: EngineToX -> T.Text
+commandText (Move (XBoardMove t)) = "move " <> t
+commandText (Feature fs) = case fs of
+  [] -> ""
+  _ ->
+    "feature "
+      <> ( T.unwords $ do
+             f <- fs
+             return $ case f of
+               SetBoard b -> boolFeat "setboard" b
+               Done b -> boolFeat "done" b
+               Variants vs -> stringFeat "variants" (T.intercalate "," vs)
+               UserMove b -> boolFeat "usermove" b
+               ReUse b -> boolFeat "reuse" b
+               Colors b -> boolFeat "colors" b
+               Pause b -> boolFeat "pause" b
+               NodePerSec b -> boolFeat "nps" b
+               Debug b -> boolFeat "debug" b
+               SigInt b -> boolFeat "sigint" b
+               SigTerm b -> boolFeat "sigterm" b
+               _ -> "error"
+         )
+  where
+    feat n v = n <> "=" <> v
+    boolFeat n v = feat n (if v then "1" else "0")
+    stringFeat n v = feat n ("\"" <> v <> "\"")
+commandText _ = "error"

@@ -64,7 +64,7 @@ printBoard (GSD.DisplayBoard (board)) = do
   let ((f0, r0), (f1, r1)) = bounds board
   mapM_
     ( \r -> do
-        mapM_ (\f -> putStr (renderSquare (Position {rank = r, file = f}) (board ! (f, r)))) (range (f0, f1))
+        mapM_ (\f -> putStr (renderSquare (Position {pRank = r, pFile = f}) (board ! (f, r)))) (range (f0, f1))
         putStrLn ""
     )
     ((reverse . range) (r0, r1))
