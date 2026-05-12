@@ -1,9 +1,12 @@
 module Chess.XBoard.Parser
   ( Parser (..),
     literal,
+    charInRange,
+    lowerAscii,
     integer,
     spaces,
     skipSpaces,
+    letters,
     word,
   )
 where
@@ -66,5 +69,25 @@ word = Parser $ \text ->
    in if T.null prefix
         then
           Nothing
+        else
+          Just (prefix, suffix)
+
+charInRange :: Char -> Char -> Parser Char
+charInRange lower upper = Parser $ \text -> do
+  (c, suffix) <- T.uncons text
+  if lower <= c && c <= upper
+    then
+      Just (c, suffix)
+    else
+      Nothing
+
+lowerAscii :: Parser Char
+lowerAscii = charInRange 'a' 'z'
+
+letters :: Parser T.Text
+letters = Parser $ \text ->
+  let (prefix, suffix) = T.break (not . C.isAlpha) text
+   in if T.null prefix
+        then Nothing
         else
           Just (prefix, suffix)
