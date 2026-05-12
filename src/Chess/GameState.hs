@@ -12,7 +12,13 @@ import Chess.Piece
 import Chess.Position
 import Data.Array.IArray (range)
 
-data Move = Move {pickUp :: [Position], putDown :: [(Color, PieceState)]} deriving (Show)
+data Move = Move
+  { source :: Position,
+    destination :: Position,
+    capture :: Maybe PieceType,
+    promotion :: Maybe PieceType
+  }
+  deriving (Show)
 
 data PlayerState = PlayerState {player :: Color, pieces :: [PieceState]} deriving (Show)
 
@@ -82,6 +88,7 @@ availableMoves gs =
     weOccupy pos = pos `elem` occupancy ps
     theyOccupy pos = pos `elem` occupancy ops
     occupied pos = weOccupy pos || theyOccupy pos
+    pieceAt pos =
 
     tw2 :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
     tw2 _ _ [] = []
@@ -128,7 +135,11 @@ availableMoves gs =
         trimBranches = (tw2 (not . weOccupy) (not . theyOccupy))
 
     aMoves pState =
-      [ Move {pickUp = [piecePos pState] <> (if occupied tpos then [tpos] else []), putDown = [(turn gs, pState `withPos` tpos)]}
+      [ Move
+          { source = piecePos pState,
+            destination = tpos,
+            capture = if (theyOccupy tpos) then Just ()
+          }
       | tpos <- targetPos pState
       ]
 
@@ -140,23 +151,30 @@ makeMove :: GameState -> Move -> GameState
 makeMove gs m =
   evolve
   where
+    removeCaptured playerS =
+      playerS
+        { pieces = filter (not . (== destination m) . piecePos) (pieces playerS)
+        }
+
     removePickedUp playerS =
-      playerS {pieces = filter (\ps -> not $ piecePos ps `elem` (pickUp m)) (pieces playerS)}
+      playerS {
+        pieces = filter (not . (== source m) . piecePos) (pieces playerS)
+      }
 
     insertPutDown playerS =
-      playerS {pieces = (pieces playerS) <> (map snd (putDown m))}
+      playerS {pieces = }
 
     evolve = case turn gs of
       White ->
         GameState
           { turn = nextPlayer (turn gs),
             whitePlayer = (insertPutDown . removePickedUp) (whitePlayer gs),
-            blackPlayer = removePickedUp (blackPlayer gs)
+            blackPlayer = removeCaptured (blackPlayer gs)
           }
       Black ->
         GameState
           { turn = nextPlayer (turn gs),
-            whitePlayer = removePickedUp (whitePlayer gs),
+            whitePlayer = removeCaptured (whitePlayer gs),
             blackPlayer = (insertPutDown . removePickedUp) (blackPlayer gs)
           }
 

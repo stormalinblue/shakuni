@@ -5,6 +5,8 @@ module Chess.Position
     file,
     Position (..),
     PositionColor (..),
+    rankNumber,
+    fileLetter,
     posColor,
     upAlongFile,
     downAlongFile,
@@ -16,20 +18,25 @@ module Chess.Position
     upLeft,
     downRight,
     downLeft,
+    fromPartsMaybe,
   )
 where
 
 import Data.Char (ord)
 import Data.Ix (Ix (..))
+import Data.Maybe (fromJust)
 import Data.Word (Word8)
 import GHC.Char (chr)
 
 newtype Rank = Rank Word8 deriving (Eq, Ord, Show)
 
+rankMaybe :: Word8 -> Maybe Rank
+rankMaybe r
+  | r < 1 || r > 8 = Nothing
+  | otherwise = Just (Rank (r))
+
 rank :: Word8 -> Rank
-rank r
-  | r < 1 || r > 8 = error "Bad rank"
-  | otherwise = Rank (r)
+rank = fromJust . rankMaybe
 
 instance Ix Rank where
   range (Rank (rStart), Rank (rEnd)) =
@@ -46,10 +53,13 @@ instance Ix Rank where
 
 newtype File = File Word8 deriving (Eq, Ord, Show)
 
+fileMaybe :: Char -> Maybe File
+fileMaybe c
+  | ord c < ord 'a' || ord c > ord 'h' = Nothing
+  | otherwise = (Just . File) (1 + fromIntegral ((ord c) - (ord 'a')))
+
 file :: Char -> File
-file c
-  | ord c < ord 'a' || ord c > ord 'h' = error "Bad file"
-  | otherwise = File (1 + fromIntegral ((ord c) - (ord 'a')))
+file = fromJust . fileMaybe
 
 instance Ix File where
   range (File (fStart), File (fEnd)) =
@@ -71,31 +81,44 @@ data Position = Position
   deriving (Eq, Ord)
 
 instance Show Position where
-  show (Position {pFile = File f, pRank = Rank r}) =
-    [chr (ord 'a' - 1 + fromIntegral f), chr (ord '0' + fromIntegral r)]
+  show p =
+    [fileLetter p, chr (ord '0' + (fromIntegral . rankNumber) p)]
 
-posToTuple :: Position -> (File, Rank)
-posToTuple pos = (pFile pos, pRank pos)
+rankNumber :: Position -> Word8
+rankNumber (Position {pRank = Rank r}) = r
 
-tupleToPos :: (Word8, Word8) -> Position
-tupleToPos (f, r) = Position {pFile = File f, pRank = Rank r}
+fileLetter :: Position -> Char
+fileLetter (Position {pFile = File f}) = chr (ord 'a' - 1 + fromIntegral f)
+
+fromPartsMaybe :: Char -> Word8 -> Maybe Position
+fromPartsMaybe f r = do
+  fl <- fileMaybe f
+  rk <- rankMaybe r
+  return $ Position {pFile = fl, pRank = rk}
+
+toIntTuple :: Position -> (File, Rank)
+toIntTuple pos = (pFile pos, pRank pos)
+
+fromIntTuple :: (Word8, Word8) -> Position
+fromIntTuple (f, r) = Position {pFile = File f, pRank = Rank r}
 
 instance Ix Position where
   range (p1, p2) =
-    [ Position {pFile = f, pRank = r} | (f, r) <- (range (posToTuple p1, posToTuple p2))
+    [ Position {pFile = f, pRank = r}
+    | (f, r) <- (range (toIntTuple p1, toIntTuple p2))
     ]
 
   index (p1, p2) p3 =
-    index (posToTuple p1, posToTuple p2) (posToTuple p3)
+    index (toIntTuple p1, toIntTuple p2) (toIntTuple p3)
 
   inRange (p1, p2) p3 =
-    inRange (posToTuple p1, posToTuple p2) (posToTuple p3)
+    inRange (toIntTuple p1, toIntTuple p2) (toIntTuple p3)
 
   rangeSize (p1, p2) =
-    rangeSize (posToTuple p1, posToTuple p2)
+    rangeSize (toIntTuple p1, toIntTuple p2)
 
 boardBounds :: (Position, Position)
-boardBounds = (tupleToPos (1, 1), tupleToPos (8, 8))
+boardBounds = (fromIntTuple (1, 1), fromIntTuple (8, 8))
 
 inBoard :: Position -> Bool
 inBoard = inRange boardBounds
@@ -137,25 +160,25 @@ upRight :: Position -> [Position]
 upRight (Position {pFile = File f, pRank = Rank r}) =
   takeWhile
     inBoard
-    $ [tupleToPos (f + n, r + n) | n <- [1 ..]]
+    $ [fromIntTuple (f + n, r + n) | n <- [1 ..]]
 
 upLeft :: Position -> [Position]
 upLeft (Position {pFile = File f, pRank = Rank r}) =
   takeWhile
     inBoard
-    $ [tupleToPos (f - n, r + n) | n <- [1 ..]]
+    $ [fromIntTuple (f - n, r + n) | n <- [1 ..]]
 
 downRight :: Position -> [Position]
 downRight (Position {pFile = File f, pRank = Rank r}) =
   takeWhile
     inBoard
-    $ [tupleToPos (f + n, r - n) | n <- [1 ..]]
+    $ [fromIntTuple (f + n, r - n) | n <- [1 ..]]
 
 downLeft :: Position -> [Position]
 downLeft (Position {pFile = File f, pRank = Rank r}) =
   takeWhile
     inBoard
-    $ [tupleToPos (f - n, r - n) | n <- [1 ..]]
+    $ [fromIntTuple (f - n, r - n) | n <- [1 ..]]
 
 knightMoves :: Position -> [Position]
 knightMoves (Position {pFile = File f, pRank = Rank r}) =
@@ -173,12 +196,12 @@ knightMoves (Position {pFile = File f, pRank = Rank r}) =
     un = do
       rn <- dtwos r
       fn <- dones f
-      return $ tupleToPos (fn, rn)
+      return $ fromIntTuple (fn, rn)
 
     sz = do
       rn <- dones r
       fn <- dtwos f
-      return $ tupleToPos (fn, rn)
+      return $ fromIntTuple (fn, rn)
 
 diagBranches :: Position -> [[Position]]
 diagBranches pos =

@@ -85,7 +85,8 @@ data EngineToX
   | Pong Int
 
 commandText :: EngineToX -> T.Text
-commandText (Move (XBoardMove t)) = "move " <> t
+commandText (Move xbm) = "move " <> (T.show xbm)
+commandText (Pong (n)) = "pong " <> (T.show n)
 commandText (Feature fs) = case fs of
   [] -> ""
   _ ->
@@ -104,6 +105,7 @@ commandText (Feature fs) = case fs of
                Debug b -> boolFeat "debug" b
                SigInt b -> boolFeat "sigint" b
                SigTerm b -> boolFeat "sigterm" b
+               PingF b -> boolFeat "ping" b
                _ -> "error"
          )
   where

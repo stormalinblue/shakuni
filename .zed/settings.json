@@ -2,6 +2,9 @@
   "languages": {
     "Haskell": {
       "tab_size": 2
+    },
+    "C": {
+      "tab_size": 4
     }
   }
 }

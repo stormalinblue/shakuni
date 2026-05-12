@@ -1,8 +1,11 @@
 module Chess.XBoard.XToEngine (XToEngine (..), parseXToEngine, literalP, prefixedP) where
 
+import Chess.Position (Position (..))
+import qualified Chess.Position as Pos
 import Chess.XBoard.CommonTypes (XBoardMove (..), XBoardResult)
 import Chess.XBoard.Parser
 import Control.Applicative
+import Data.Char (ord)
 import qualified Data.Text as T
 
 type Centiseconds = Int
@@ -164,6 +167,26 @@ parseXBoardLevelSetting = do
       secs <- readInt
       return $ Clock {minutes = mins, seconds = secs}
 
+move :: Parser XBoardMove
+move = do
+  let rankNum = (\x -> fromIntegral (1 + ord x - ord '1')) <$> charInRange '1' '8'
+      posPair = do
+        fl <- charInRange 'a' 'h'
+        rk <- rankNum
+        case Pos.fromPartsMaybe fl rk of
+          Just pos -> return pos
+          Nothing -> Parser $ \_ -> Nothing
+  pos1 <- posPair
+  pos2 <- posPair
+  let partialMove = Algebraic (pos1, pos2)
+  partialMove
+    <$> ( ( do
+              promotion <- letters
+              return (Just promotion)
+          )
+            <|> (return Nothing)
+        )
+
 parseXToEngine :: Parser XToEngine
 parseXToEngine =
   let parseXBoard = literalP XBoard "xboard"
@@ -187,7 +210,8 @@ parseXToEngine =
       parseOpponentTime = prefixedP OpponentTime "otim" ((100 *) <$> readInt)
       parsePost = literalP Post "post"
       parseHard = literalP Hard "hard"
-      parseUserMove = prefixedP (UserMove . XBoardMove) "usermove" word
+      parseUserMove = prefixedP UserMove "usermove" move
+      parsePing = prefixedP Ping "ping" readInt
    in parseXBoard
         <|> parseProtover
         <|> parseAccepted
@@ -210,3 +234,4 @@ parseXToEngine =
         <|> parsePost
         <|> parseUserMove
         <|> parseHard
+        <|> parsePing
